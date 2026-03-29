@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ET AI News — Multi-Agent System</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--ink:#0d0d0d;--paper:#f4efe6;--et-red:#c0392b;--et-gold:#b8860b;--dim:#7a7268;--rule:#ddd5c0;--card:#ffffff;--green:#1a6b3c;--blue:#1a3a6b;--card-shadow:0 1px 4px rgba(0,0,0,0.08);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;}
+.masthead{background:var(--ink);color:var(--paper);border-bottom:3px solid var(--et-red);}
+.masthead-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;}
+.logo-et{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900;color:var(--et-red);letter-spacing:-1px;}
+.logo-text{font-family:'Playfair Display',serif;font-size:0.95rem;color:var(--paper);margin-left:0.5rem;}
+.logo-sub{font-family:'IBM Plex Mono',monospace;font-size:0.58rem;color:var(--et-gold);letter-spacing:3px;text-transform:uppercase;display:block;}
+.badge{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;background:var(--et-red);color:white;padding:0.3rem 0.8rem;letter-spacing:2px;text-transform:uppercase;}
+.api-bar{background:#1a1a1a;padding:0.7rem 1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+.api-bar label{font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:#888;letter-spacing:2px;text-transform:uppercase;white-space:nowrap;}
+.api-bar input{flex:1;background:#2a2a2a;border:1px solid #444;color:#e0e0e0;padding:0.5rem 0.8rem;font-family:'IBM Plex Mono',monospace;font-size:0.78rem;outline:none;max-width:480px;}
+.api-bar input:focus{border-color:#f55036;}
+.api-status{font-family:'IBM Plex Mono',monospace;font-size:0.62rem;letter-spacing:1px;padding:0.3rem 0.7rem;border:1px solid #444;color:#888;white-space:nowrap;}
+.api-status.ok{border-color:var(--green);color:#4caf50;}
+.free-badge{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;background:#f55036;color:white;padding:0.25rem 0.6rem;letter-spacing:1px;}
+.get-key-link{font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:#f55036;text-decoration:none;letter-spacing:1px;white-space:nowrap;}
+.get-key-link:hover{text-decoration:underline;}
+.ticker{background:var(--et-red);color:white;padding:0.35rem 0;overflow:hidden;font-family:'IBM Plex Mono',monospace;font-size:0.68rem;letter-spacing:1px;}
+.ticker-inner{display:flex;gap:4rem;animation:ticker 35s linear infinite;white-space:nowrap;}
+@keyframes ticker{from{transform:translateX(100vw);}to{transform:translateX(-100%);}}
+.shell{max-width:1100px;margin:0 auto;padding:1.5rem;}
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--rule);margin-bottom:1.8rem;overflow-x:auto;}
+.tab{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;letter-spacing:1.5px;text-transform:uppercase;padding:0.75rem 1.2rem;cursor:pointer;border:none;background:transparent;color:var(--dim);border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all 0.2s;}
+.tab:hover{color:var(--ink);}
+.tab.active{color:var(--et-red);border-bottom-color:var(--et-red);font-weight:600;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.section-head{display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem;padding-bottom:0.5rem;border-bottom:2px solid var(--ink);}
+.section-head h2{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;}
+.pill{font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:2px;text-transform:uppercase;padding:0.2rem 0.6rem;border:1px solid currentColor;}
+.pill-red{color:var(--et-red);}.pill-gold{color:var(--et-gold);}.pill-green{color:var(--green);}.pill-blue{color:var(--blue);}.pill-dim{color:var(--dim);}
+.input-panel{background:var(--card);border:1px solid var(--rule);padding:1.4rem;margin-bottom:1.5rem;box-shadow:var(--card-shadow);}
+.input-row{display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;}
+.input-group{flex:1;min-width:180px;}
+label{font-family:'IBM Plex Mono',monospace;font-size:0.62rem;letter-spacing:1px;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:0.35rem;}
+input,textarea,select{width:100%;border:1px solid var(--rule);background:var(--paper);padding:0.65rem 0.8rem;font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--ink);outline:none;transition:border-color 0.2s;-webkit-appearance:none;}
+input:focus,textarea:focus,select:focus{border-color:var(--et-red);}
+textarea{resize:vertical;}
+.btn{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;letter-spacing:2px;text-transform:uppercase;padding:0.75rem 1.6rem;border:none;cursor:pointer;transition:all 0.2s;}
+.btn-primary{background:var(--et-red);color:white;}
+.btn-primary:hover{background:#a93226;}
+.loading{display:none;align-items:center;gap:0.8rem;padding:1.2rem;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--dim);letter-spacing:1px;}
+.loading.show{display:flex;}
+.spinner{width:16px;height:16px;border:2px solid var(--rule);border-top-color:var(--et-red);border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.output{display:none;animation:fadeUp 0.35s ease;}
+.output.show{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.error-box{background:#fff5f5;border:1px solid #f5c6c6;color:var(--et-red);padding:0.9rem 1rem;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;display:none;margin-bottom:1rem;line-height:1.6;}
+.error-box.show{display:block;}
+.card{background:var(--card);border:1px solid var(--rule);padding:1.3rem;margin-bottom:0.9rem;box-shadow:var(--card-shadow);}
+.card-meta{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--dim);letter-spacing:1px;margin-bottom:0.6rem;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+@media(max-width:680px){.grid2{grid-template-columns:1fr;}}
+.insight{border-left:3px solid var(--et-red);padding-left:1rem;margin-bottom:0.9rem;}
+.insight h4{font-family:'Playfair Display',serif;font-size:0.92rem;margin-bottom:0.25rem;}
+.insight p{font-size:0.85rem;line-height:1.6;color:#333;}
+.insight .sig{font-size:0.75rem;color:var(--et-gold);font-style:italic;margin-top:0.2rem;}
+.sent{display:inline-block;padding:0.2rem 0.7rem;font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;font-weight:600;}
+.s-bullish{background:#d4edda;color:var(--green);}.s-bearish{background:#f8d7da;color:var(--et-red);}.s-neutral{background:#e2e8f0;color:#4a5568;}.s-mixed{background:#fff3cd;color:#856404;}
+.timeline{position:relative;padding-left:1.4rem;}
+.timeline::before{content:'';position:absolute;left:0.35rem;top:0;bottom:0;width:1px;background:var(--rule);}
+.tl-item{position:relative;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px dashed var(--rule);}
+.tl-item:last-child{border-bottom:none;}
+.tl-dot{position:absolute;left:-1.1rem;top:0.28rem;width:9px;height:9px;border-radius:50%;background:var(--et-red);}
+.tl-date{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--dim);letter-spacing:1px;margin-bottom:0.15rem;}
+.tl-event{font-size:0.85rem;line-height:1.5;}
+.q-chip{display:inline-block;background:var(--paper);border:1px solid var(--rule);padding:0.35rem 0.8rem;font-size:0.8rem;margin:0.25rem 0.25rem 0 0;}
+.news-card{background:var(--card);border:1px solid var(--rule);padding:1.1rem;margin-bottom:0.7rem;display:grid;grid-template-columns:1fr 56px;gap:1rem;align-items:start;box-shadow:var(--card-shadow);}
+.relevance-num{font-family:'IBM Plex Mono',monospace;font-size:1.3rem;font-weight:600;color:var(--et-red);line-height:1;text-align:right;}
+.relevance-label{font-family:'IBM Plex Mono',monospace;font-size:0.52rem;color:var(--dim);letter-spacing:1px;text-transform:uppercase;text-align:right;}
+.why-tag{font-size:0.75rem;color:var(--green);font-style:italic;margin-top:0.35rem;}
+.player{display:inline-flex;align-items:center;gap:0.5rem;border:1px solid var(--rule);padding:0.35rem 0.7rem;margin:0.25rem;font-size:0.8rem;}
+.avatar{width:22px;height:22px;background:var(--ink);color:var(--paper);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:700;flex-shrink:0;}
+.seg{display:grid;grid-template-columns:72px 1fr 1fr;gap:0.8rem;padding:0.9rem 0;border-bottom:1px dashed var(--rule);align-items:start;font-size:0.85rem;}
+.seg:last-child{border-bottom:none;}
+.seg-time{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:var(--et-red);}
+.seg-label{font-family:'IBM Plex Mono',monospace;font-size:0.55rem;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin-bottom:0.2rem;}
+.seg-visual{font-style:italic;color:var(--dim);line-height:1.5;}
+.vern-impact{background:#f0fff4;border-left:3px solid var(--green);padding:1rem;margin-bottom:0.8rem;}
+.vern-analogy{background:#fffbf0;border-left:3px solid var(--et-gold);padding:1rem;margin-bottom:0.8rem;}
+.phases{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1rem;}
+.phase-step{padding:0.25rem 0.7rem;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:1px;text-transform:uppercase;border:1px solid var(--rule);color:var(--dim);}
+.phase-step.active{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div style="display:flex;align-items:baseline;gap:0.5rem">
+      <span class="logo-et">ET</span>
+      <div>
+        <span class="logo-text">Economic Times</span>
+        <span class="logo-sub">AI-Native News · Multi-Agent System</span>
+      </div>
+    </div>
+    <span class="badge">⚡ Gen AI Hackathon 2026</span>
+  </div>
+</header>
+
+<div class="api-bar">
+  <label>Groq API Key</label>
+  <input type="password" id="api-key" placeholder="gsk_..." oninput="checkKey()"/>
+  <span class="api-status" id="api-status">● NOT SET</span>
+  <span class="free-badge">FREE</span>
+  <a class="get-key-link" href="https://console.groq.com/keys" target="_blank">→ Get Free Key at console.groq.com</a>
+</div>
+
+<div class="ticker">
+  <div class="ticker-inner">
+    <span>SENSEX 82,148 ▲ 0.4%</span><span>NIFTY 24,960 ▲ 0.3%</span>
+    <span>USD/INR 83.42</span><span>GOLD ₹72,450 ▲ 0.8%</span>
+    <span>RBI REPO 6.5%</span><span>5 AI AGENTS ACTIVE</span>
+    <span>POWERED BY GROQ · FREE TIER</span>
+    <span>SENSEX 82,148 ▲ 0.4%</span><span>NIFTY 24,960 ▲ 0.3%</span>
+  </div>
+</div>
+
+<div class="shell">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('personalize',this)">📰 My ET</button>
+    <button class="tab" onclick="switchTab('briefing',this)">🧠 News Navigator</button>
+    <button class="tab" onclick="switchTab('story',this)">📈 Story Arc</button>
+    <button class="tab" onclick="switchTab('vernacular',this)">🌐 Vernacular</button>
+    <button class="tab" onclick="switchTab('video',this)">🎬 Video Studio</button>
+  </div>
+
+  <!-- TAB 1: PERSONALIZATION -->
+  <div id="tab-personalize" class="tab-panel active">
+    <div class="section-head">
+      <h2>My ET — Personalized Newsroom</h2>
+      <span class="pill pill-red">Personalization Agent</span>
+    </div>
+    <div class="input-panel">
+      <div class="input-row">
+        <div class="input-group"><label>Your Name</label><input id="p-name" value="Priya Sharma"/></div>
+        <div class="input-group"><label>Your Role</label>
+          <select id="p-role">
+            <option>Startup Founder</option><option>Mutual Fund Investor</option>
+            <option>Student</option><option>CFO / Finance Head</option><option>Policy Researcher</option>
+          </select>
+        </div>
+        <div class="input-group"><label>Primary Interests</label><input id="p-interests" value="fintech, AI, startups"/></div>
+      </div>
+      <div style="margin-bottom:1rem">
+        <label>Today's Headlines (separated by |)</label>
+        <textarea id="p-articles" rows="3">RBI signals pause in rate cycle amid inflation concerns | SEBI tightens F&O regulations impacting retail traders | India's startup ecosystem sees record $4.2B Q1 funding | Reliance Jio launches AI-powered 5G enterprise suite | Budget 2026 boosts PLI scheme for semiconductor manufacturing | OpenAI eyes India expansion amid AI talent surge | Adani Group reports highest ever quarterly profit</textarea>
+      </div>
+      <button class="btn btn-primary" onclick="runPersonalize()">Run Personalization Agent →</button>
+    </div>
+    <div class="loading" id="load-p"><div class="spinner"></div>Personalization Agent analyzing…</div>
+    <div class="error-box" id="err-p"></div>
+    <div class="output" id="out-p"></div>
+  </div>
+
+  <!-- TAB 2: BRIEFING -->
+  <div id="tab-briefing" class="tab-panel">
+    <div class="section-head">
+      <h2>News Navigator — Interactive Briefing</h2>
+      <span class="pill pill-gold">Briefing Agent</span>
+    </div>
+    <div class="input-panel">
+      <div class="input-row">
+        <div class="input-group" style="flex:2"><label>Topic</label><input id="b-topic" value="RBI monetary policy and inflation outlook 2026"/></div>
+        <div class="input-group"><label>Depth</label>
+          <select id="b-depth"><option value="quick">Quick</option><option value="standard" selected>Standard</option><option value="deep">Deep Dive</option></select>
+        </div>
+      </div>
+      <div style="margin-bottom:1rem">
+        <label>Articles to Synthesize (one per line)</label>
+        <textarea id="b-articles" rows="5">RBI holds repo rate at 6.5% for third consecutive meeting. Governor signals inflation must fall to 4% before cuts begin. Food inflation remains sticky at 7.2%.
+Bond markets rally as RBI adopts accommodative stance. 10-year yields fall to 6.89%. Analysts predict 25bps cut in June policy.
+IMF revises India GDP forecast to 6.8% for FY26. Flags global uncertainty and monsoon risks.
+Finance Ministry says fiscal deficit target of 4.9% GDP on track. Direct tax collections up 18% YoY.</textarea>
+      </div>
+      <button class="btn btn-primary" onclick="runBriefing()">Generate AI Briefing →</button>
+    </div>
+    <div class="loading" id="load-b"><div class="spinner"></div>Briefing Agent synthesizing articles…</div>
+    <div class="error-box" id="err-b"></div>
+    <div class="output" id="out-b"></div>
+  </div>
+
+  <!-- TAB 3: STORY ARC -->
+  <div id="tab-story" class="tab-panel">
+    <div class="section-head">
+      <h2>Story Arc Tracker</h2>
+      <span class="pill pill-green">Story Arc Agent</span>
+    </div>
+    <div class="input-panel">
+      <div style="margin-bottom:1rem"><label>Ongoing Story</label><input id="s-name" value="Adani Group — Hindenburg allegations and recovery arc"/></div>
+      <div style="margin-bottom:1rem">
+        <label>Timeline (format: Date: What happened)</label>
+        <textarea id="s-articles" rows="6">Jan 2023: Hindenburg Research publishes short-seller report. Adani stocks crash 60%.
+Feb 2023: Group cancels ₹20,000 crore FPO. GQG Partners invests $1.87B.
+Apr 2023: Supreme Court appoints expert panel. Group repays ₹1.1 lakh crore debt.
+Oct 2023: SEBI gives clean chit on 22 of 24 allegations.
+Jan 2024: US DoJ indicts Gautam Adani. Stocks fall 20%.
+Mar 2026: Group reports highest quarterly profit. Stocks recover fully.</textarea>
+      </div>
+      <button class="btn btn-primary" onclick="runStoryArc()">Track Story Arc →</button>
+    </div>
+    <div class="loading" id="load-s"><div class="spinner"></div>Story Arc Agent building narrative…</div>
+    <div class="error-box" id="err-s"></div>
+    <div class="output" id="out-s"></div>
+  </div>
+
+  <!-- TAB 4: VERNACULAR -->
+  <div id="tab-vernacular" class="tab-panel">
+    <div class="section-head">
+      <h2>Vernacular Business News Engine</h2>
+      <span class="pill pill-blue">Vernacular Agent</span>
+    </div>
+    <div class="input-panel">
+      <div style="margin-bottom:1rem"><label>Article Title</label><input id="v-title" value="RBI holds interest rates, signals rate cut possible by June 2026"/></div>
+      <div style="margin-bottom:1rem">
+        <label>Article Content</label>
+        <textarea id="v-content" rows="3">The Reserve Bank of India's Monetary Policy Committee voted 5-1 to hold the repo rate at 6.5% for the third consecutive time. Governor Das indicated that while inflation is trending towards the 4% target, food prices remain elevated. Bond yields fell to a 2-year low of 6.89%.</textarea>
+      </div>
+      <div class="input-row">
+        <div class="input-group"><label>Target Language</label>
+          <select id="v-lang"><option>Hindi</option><option>Tamil</option><option>Telugu</option><option>Bengali</option></select>
+        </div>
+        <div class="input-group"><label>Reader Context</label>
+          <select id="v-context"><option>General Public</option><option>Farmer / Rural</option><option>Student</option><option>Small Investor</option><option>Small Business Owner</option></select>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="runVernacular()">Translate & Adapt →</button>
+    </div>
+    <div class="loading" id="load-v"><div class="spinner"></div>Vernacular Agent adapting content…</div>
+    <div class="error-box" id="err-v"></div>
+    <div class="output" id="out-v"></div>
+  </div>
+
+  <!-- TAB 5: VIDEO STUDIO -->
+  <div id="tab-video" class="tab-panel">
+    <div class="section-head">
+      <h2>AI News Video Studio</h2>
+      <span class="pill pill-dim">Video Script Agent</span>
+    </div>
+    <div class="input-panel">
+      <div style="margin-bottom:1rem"><label>Article Title</label><input id="vid-title" value="India becomes world's 3rd largest economy, crosses Japan"/></div>
+      <div style="margin-bottom:1rem">
+        <label>Article Content</label>
+        <textarea id="vid-content" rows="3">India's GDP has surpassed Japan's at $4.3 trillion. Manufacturing grew 8.2% YoY driven by PLI schemes. FDI inflows hit $84 billion. Goldman Sachs projects India to become the second largest economy by 2075.</textarea>
+      </div>
+      <div style="margin-bottom:1rem"><label>Duration</label>
+        <select id="vid-dur"><option value="60">60 seconds</option><option value="90" selected>90 seconds</option><option value="120">120 seconds</option></select>
+      </div>
+      <button class="btn btn-primary" onclick="runVideoScript()">Generate Video Script →</button>
+    </div>
+    <div class="loading" id="load-vid"><div class="spinner"></div>Video Script Agent writing script…</div>
+    <div class="error-box" id="err-vid"></div>
+    <div class="output" id="out-vid"></div>
+  </div>
+</div>
+
+<script>
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+function checkKey() {
+  const k = document.getElementById('api-key').value.trim();
+  const s = document.getElementById('api-status');
+  if (k.startsWith('gsk_') && k.length > 20) { s.textContent='● READY'; s.className='api-status ok'; }
+  else { s.textContent='● NOT SET'; s.className='api-status'; }
+}
+
+function getKey() {
+  const k = document.getElementById('api-key').value.trim();
+  if (!k.startsWith('gsk_')) throw new Error('Please paste your Groq API key at the top. Get it free at console.groq.com/keys');
+  return k;
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function show(id){document.getElementById(id).classList.add('show');}
+function hide(id){document.getElementById(id).classList.remove('show');}
+function setHTML(id,html){document.getElementById(id).innerHTML=html;}
+function showErr(id,msg){
+  const e=document.getElementById(id);
+  e.innerHTML='⚠ '+msg+'<br><br>💡 Get a free Groq key at <a href="https://console.groq.com/keys" target="_blank" style="color:var(--et-red)">console.groq.com/keys</a>';
+  e.classList.add('show');
+}
+function sentClass(s){return{bullish:'s-bullish',bearish:'s-bearish',neutral:'s-neutral',mixed:'s-mixed'}[(s||'').toLowerCase()]||'s-neutral';}
+
+async function callGroq(systemPrompt, userMsg) {
+  const key = getKey();
+  const res = await fetch(GROQ_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMsg }
+      ],
+      temperature: 0.7,
+      max_tokens: 2048
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || 'Groq API error ' + res.status);
+  }
+  const data = await res.json();
+  let text = data.choices?.[0]?.message?.content || "";
+  text = text.replace(/```json|```/g,"").trim();
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start===-1||end===-1) throw new Error("Invalid response. Please try again.");
+  text = text.slice(start, end+1);
+  // Remove bad control characters
+  text = text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
+  text = text.replace(/\n|\r/g, " ").replace(/\t/g, " ");
+  return JSON.parse(text);
+}
+
+// AGENT 1: PERSONALIZATION
+async function runPersonalize() {
+  hide('err-p'); hide('out-p'); show('load-p');
+  try {
+    const articles = document.getElementById('p-articles').value
+      .split('|').map(t=>({title:t.trim(),category:'Business'}));
+    const r = await callGroq(
+      `You are the Personalization Agent for Economic Times. Rank top 5 articles most relevant to this specific user.
+Return ONLY valid JSON with no extra text:
+{"personalized_greeting":"one-line greeting for this user","ranked_articles":[{"title":"...","category":"...","relevance_score":85,"why_relevant":"one sentence why relevant","reading_time_mins":2}]}`,
+      `Name: ${document.getElementById('p-name').value}, Role: ${document.getElementById('p-role').value}, Interests: ${document.getElementById('p-interests').value}
+Articles: ${JSON.stringify(articles)}`
+    );
+    hide('load-p');
+    let html=`<div class="card" style="border-left:3px solid var(--et-red)">
+      <div class="card-meta">Personalization Agent · Groq · ${new Date().toLocaleTimeString()}</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.05rem">${r.personalized_greeting||'Good morning!'}</div>
+    </div>`;
+    (r.ranked_articles||[]).forEach((a,i)=>{
+      html+=`<div class="news-card">
+        <div>
+          <div class="card-meta">#${i+1} · ${a.category||'Business'} · ${a.reading_time_mins||2} min read</div>
+          <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:0.4rem">${a.title}</div>
+          <div class="why-tag">↳ ${a.why_relevant||''}</div>
+        </div>
+        <div><div class="relevance-num">${a.relevance_score||'—'}</div><div class="relevance-label">match</div></div>
+      </div>`;
+    });
+    setHTML('out-p',html); show('out-p');
+  } catch(e){hide('load-p');showErr('err-p',e.message);}
+}
+
+// AGENT 2: BRIEFING
+async function runBriefing() {
+  hide('err-b'); hide('out-b'); show('load-b');
+  try {
+    const articles = document.getElementById('b-articles').value
+      .split('\n').filter(l=>l.trim()).map((l,i)=>({title:`Article ${i+1}`,content:l.trim()}));
+    const r = await callGroq(
+      `You are the News Navigator Briefing Agent for Economic Times. Synthesize multiple articles into one smart briefing.
+Return ONLY valid JSON with no extra text:
+{"headline":"...","tldr":"2 sentence summary","key_sections":[{"title":"...","insight":"2-3 sentences","significance":"why it matters"}],"key_players":[{"name":"...","role":"...","stance":"..."}],"contrarian_view":"the perspective most people are missing","follow_up_questions":["?","?","?"],"sentiment":"bullish|bearish|neutral|mixed","what_to_watch":"next development to track"}`,
+      `Topic: ${document.getElementById('b-topic').value}\nDepth: ${document.getElementById('b-depth').value}\nArticles: ${JSON.stringify(articles)}`
+    );
+    hide('load-b');
+    const sc=sentClass(r.sentiment);
+    let html=`<div class="card" style="border-top:3px solid var(--et-gold)">
+      <div class="card-meta">Briefing Agent · Groq · ${new Date().toLocaleTimeString()}</div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:0.7rem;line-height:1.3">${r.headline||''}</h2>
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.8rem;flex-wrap:wrap">
+        <span class="sent ${sc}">${r.sentiment||'neutral'}</span>
+        <span style="font-size:0.85rem;color:var(--dim)">${r.tldr||''}</span>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card"><div class="card-meta" style="margin-bottom:0.8rem">Key Insights</div>`;
+    (r.key_sections||[]).forEach(s=>{
+      html+=`<div class="insight"><h4>${s.title}</h4><p>${s.insight}</p><p class="sig">Why it matters: ${s.significance}</p></div>`;
+    });
+    html+=`</div><div>
+      <div class="card" style="margin-bottom:0.9rem"><div class="card-meta" style="margin-bottom:0.6rem">Key Players</div>`;
+    (r.key_players||[]).forEach(p=>{
+      html+=`<div class="player"><div class="avatar">${(p.name||'?')[0]}</div>
+        <div><div style="font-size:0.82rem;font-weight:600">${p.name}</div>
+        <div style="font-size:0.7rem;color:var(--dim)">${p.role} · ${p.stance}</div></div></div>`;
+    });
+    html+=`</div>
+      <div class="card" style="margin-bottom:0.9rem"><div class="card-meta" style="margin-bottom:0.5rem">Contrarian View</div>
+        <div style="font-size:0.86rem;font-style:italic;line-height:1.6;color:#444">"${r.contrarian_view||''}"</div></div>
+      <div class="card"><div class="card-meta" style="margin-bottom:0.5rem">What to Watch</div>
+        <div style="font-size:0.86rem;line-height:1.6">${r.what_to_watch||''}</div></div>
+    </div></div>
+    <div class="card" style="margin-top:0.9rem"><div class="card-meta" style="margin-bottom:0.6rem">Follow-up Questions</div>`;
+    (r.follow_up_questions||[]).forEach(q=>{html+=`<span class="q-chip">${q}</span>`;});
+    html+=`</div>`;
+    setHTML('out-b',html); show('out-b');
+  } catch(e){hide('load-b');showErr('err-b',e.message);}
+}
+
+// AGENT 3: STORY ARC
+async function runStoryArc() {
+  hide('err-s'); hide('out-s'); show('load-s');
+  try {
+    const articles = document.getElementById('s-articles').value
+      .split('\n').filter(l=>l.trim()).map(l=>{
+        const i=l.indexOf(':'); return {date:l.slice(0,i).trim(),content:l.slice(i+1).trim()};
+      });
+    const r = await callGroq(
+      `You are the Story Arc Tracker for Economic Times. Build a complete narrative arc from events.
+Return ONLY valid JSON with no extra text:
+{"story_title":"...","story_phase":"emerging|developing|peak|resolving|resolved","story_summary":"2 paragraphs","timeline":[{"date":"...","headline":"...","sentiment":"positive|negative|neutral","key_development":"..."}],"sentiment_arc":"how sentiment shifted overall","contrarian_perspectives":["...","..."],"what_to_watch_next":["...","..."]}`,
+      `Story: ${document.getElementById('s-name').value}\nEvents: ${JSON.stringify(articles)}`
+    );
+    hide('load-s');
+    const phases=['emerging','developing','peak','resolving','resolved'];
+    const pi=phases.indexOf((r.story_phase||'').toLowerCase());
+    let html=`<div class="card" style="border-top:3px solid var(--green)">
+      <div class="card-meta">Story Arc Agent · Groq · ${new Date().toLocaleTimeString()}</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:0.8rem">${r.story_title||''}</h3>
+      <div class="phases">`;
+    phases.forEach((p,i)=>{html+=`<span class="phase-step${i===pi?' active':''}">${p}</span>`;});
+    html+=`</div><p style="font-size:0.87rem;line-height:1.7">${r.story_summary||''}</p></div>
+    <div class="grid2">
+      <div class="card"><div class="card-meta" style="margin-bottom:0.8rem">Timeline</div>
+        <div class="timeline">`;
+    (r.timeline||[]).forEach(t=>{
+      const col=t.sentiment==='positive'?'var(--green)':t.sentiment==='negative'?'var(--et-red)':'var(--dim)';
+      html+=`<div class="tl-item"><div class="tl-dot" style="background:${col}"></div>
+        <div class="tl-date">${t.date}</div>
+        <div class="tl-event"><strong>${t.headline||''}</strong><br><span style="color:var(--dim)">${t.key_development||''}</span></div></div>`;
+    });
+    html+=`</div></div><div>
+      <div class="card" style="margin-bottom:0.9rem"><div class="card-meta" style="margin-bottom:0.6rem">Sentiment Arc</div>
+        <p style="font-size:0.86rem;line-height:1.7;font-style:italic">${r.sentiment_arc||''}</p></div>
+      <div class="card" style="margin-bottom:0.9rem"><div class="card-meta" style="margin-bottom:0.6rem">Contrarian Perspectives</div>`;
+    (r.contrarian_perspectives||[]).forEach(p=>{html+=`<div class="insight"><p>${p}</p></div>`;});
+    html+=`</div><div class="card"><div class="card-meta" style="margin-bottom:0.6rem">What to Watch Next</div>`;
+    (r.what_to_watch_next||[]).forEach(w=>{html+=`<div style="font-size:0.84rem;padding:0.35rem 0;border-bottom:1px dashed var(--rule)">→ ${w}</div>`;});
+    html+=`</div></div></div>`;
+    setHTML('out-s',html); show('out-s');
+  } catch(e){hide('load-s');showErr('err-s',e.message);}
+}
+
+// AGENT 4: VERNACULAR
+async function runVernacular() {
+  hide('err-v'); hide('out-v'); show('load-v');
+  try {
+    const r = await callGroq(
+      `You are the Vernacular Business News Agent for Economic Times. Culturally adapt news for regional readers — NOT literal translation. Use local analogies and idioms.
+Return ONLY valid JSON with no extra text:
+{"translated_title":"...","translated_content":"full article in target language","local_analogy":"a local analogy that makes concept clear","impact_on_reader":"how this specifically affects this reader type","key_terms_explained":[{"term":"English term","local_explanation":"simple explanation in target language"}]}`,
+      `Title: ${document.getElementById('v-title').value}
+Content: ${document.getElementById('v-content').value}
+Target Language: ${document.getElementById('v-lang').value}
+Reader Type: ${document.getElementById('v-context').value}`
+    );
+    hide('load-v');
+    let html=`<div class="card" style="border-top:3px solid var(--blue)">
+      <div class="card-meta">Vernacular Agent · Groq · ${document.getElementById('v-lang').value} · ${document.getElementById('v-context').value} · ${new Date().toLocaleTimeString()}</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:1rem">${r.translated_title||''}</h3>
+      <div style="font-size:0.95rem;line-height:1.9;margin-bottom:1rem">${r.translated_content||''}</div>
+    </div>
+    <div class="vern-impact"><div class="card-meta" style="margin-bottom:0.4rem">How this affects you</div>
+      <div style="font-size:0.87rem;line-height:1.6">${r.impact_on_reader||''}</div></div>
+    <div class="vern-analogy"><div class="card-meta" style="margin-bottom:0.4rem">Local Analogy</div>
+      <div style="font-size:0.87rem;font-style:italic;line-height:1.6">${r.local_analogy||''}</div></div>`;
+    if((r.key_terms_explained||[]).length){
+      html+=`<div class="card"><div class="card-meta" style="margin-bottom:0.6rem">Key Terms Explained</div>`;
+      r.key_terms_explained.forEach(t=>{
+        html+=`<div style="display:flex;gap:1rem;padding:0.5rem 0;border-bottom:1px dashed var(--rule);font-size:0.84rem">
+          <strong style="min-width:110px">${t.term}</strong><span>${t.local_explanation}</span></div>`;
+      });
+      html+=`</div>`;
+    }
+    setHTML('out-v',html); show('out-v');
+  } catch(e){hide('load-v');showErr('err-v',e.message);}
+}
+
+// AGENT 5: VIDEO SCRIPT
+async function runVideoScript() {
+  hide('err-vid'); hide('out-vid'); show('load-vid');
+  try {
+    const r = await callGroq(
+      `You are the AI News Video Studio Agent for Economic Times. Write a broadcast-quality short video script.
+Return ONLY valid JSON with no extra text:
+{"title":"...","duration_seconds":90,"hook":"opening 5-second grabber","segments":[{"timestamp":"0:00-0:15","narration":"exact words to say","visual_direction":"what to show on screen","data_overlay":"stat or null"}],"closing_line":"memorable ending","background_music_mood":"tense|upbeat|neutral|dramatic","key_stats_for_animation":["stat1","stat2","stat3"]}`,
+      `Article: ${document.getElementById('vid-title').value}
+Content: ${document.getElementById('vid-content').value}
+Duration: ${document.getElementById('vid-dur').value} seconds`
+    );
+    hide('load-vid');
+    const moodCol={dramatic:'var(--et-red)',tense:'#7b341e',upbeat:'var(--green)',neutral:'var(--dim)'};
+    let html=`<div class="card" style="border-top:3px solid var(--dim)">
+      <div class="card-meta">Video Script Agent · Groq · ${r.duration_seconds||90}s · ${new Date().toLocaleTimeString()}</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:0.6rem">${r.title||''}</h3>
+      <span class="pill pill-dim" style="color:${moodCol[r.background_music_mood]||'var(--dim)'}">♪ ${r.background_music_mood||'neutral'} music</span>
+      <div style="background:#f0f7ff;border-left:3px solid var(--blue);padding:1rem;margin-top:0.9rem">
+        <div class="card-meta" style="margin-bottom:0.3rem">Hook (0:00–0:05)</div>
+        <div style="font-size:0.95rem;font-style:italic">"${r.hook||''}"</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-meta" style="margin-bottom:0.8rem">Script Segments</div>
+      <div style="display:grid;grid-template-columns:72px 1fr 1fr;gap:0.5rem;margin-bottom:0.5rem">
+        <div class="seg-label">Time</div><div class="seg-label">Narration</div><div class="seg-label">Visuals</div>
+      </div>`;
+    (r.segments||[]).forEach(s=>{
+      html+=`<div class="seg">
+        <div class="seg-time">${s.timestamp}</div>
+        <div><div style="line-height:1.6">${s.narration}</div>
+          ${s.data_overlay?`<div style="margin-top:0.3rem;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:var(--et-red);background:#fff5f5;padding:0.15rem 0.5rem;display:inline-block">[${s.data_overlay}]</div>`:''}
+        </div>
+        <div class="seg-visual">📷 ${s.visual_direction}</div>
+      </div>`;
+    });
+    html+=`</div>
+    <div class="card" style="background:var(--ink);color:var(--paper)">
+      <div class="card-meta" style="color:#777;margin-bottom:0.4rem">Closing Line</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.05rem;font-style:italic">"${r.closing_line||''}"</div>
+    </div>`;
+    if((r.key_stats_for_animation||[]).length){
+      html+=`<div class="card"><div class="card-meta" style="margin-bottom:0.6rem">Stats for Animation</div>
+        <div style="display:flex;gap:0.8rem;flex-wrap:wrap">`;
+      r.key_stats_for_animation.forEach(s=>{html+=`<div style="background:var(--paper);border:1px solid var(--rule);padding:0.5rem 0.9rem;font-size:0.83rem">📊 ${s}</div>`;});
+      html+=`</div></div>`;
+    }
+    setHTML('out-vid',html); show('out-vid');
+  } catch(e){hide('load-vid');showErr('err-vid',e.message);}
+}
+</script>
+</body>
+</html>
